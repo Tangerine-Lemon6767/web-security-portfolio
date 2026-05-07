@@ -69,6 +69,3 @@ If additional functionality exists (edit/delete/share), the impact could increas
 
 Testing was stopped after confirming unauthorized access in order to avoid affecting another user's data or modifying resources outside the permitted scope.
 
-## Evidence
-
-![IDOR Evidence](idor-proof.png)
