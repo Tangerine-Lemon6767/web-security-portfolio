@@ -71,5 +71,12 @@ Testing was stopped after confirming unauthorized access in order to avoid affec
 
 ## Evidence
 
-![IDOR Evidence](idor-proof.png)
+<img width="1280" height="719" alt="idor-proof1" src="https://github.com/user-attachments/assets/b1e8bb7e-52fe-4fe2-a2b1-bc00265b3e79" />
+<img width="1280" height="656" alt="idor-proof2" src="https://github.com/user-attachments/assets/30a647c8-ebdc-4097-9668-f6f24263857b" />
+<img width="1280" height="650" alt="idor-proof3" src="https://github.com/user-attachments/assets/0263f18e-24a9-4ae8-b0d3-6a26dd4745d5" />
+<img width="1280" height="658" alt="idor-proof4" src="https://github.com/user-attachments/assets/fe87d926-8b0f-4ff6-84ac-188331800b6b" />
+<img width="1280" height="615" alt="idor-proof5" src="https://github.com/user-attachments/assets/ff7e3d1e-2899-40cd-b6b7-61d0c39db697" />
+
+
+
 
