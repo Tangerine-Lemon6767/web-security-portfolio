@@ -1,73 +1,161 @@
-
 # IDOR in Wishlist Functionality Leading to Unauthorized Access
+
+**Target:** REI Co-op (rei.com)  
+**Tested By:** redhoodsec  
+**Date:** April 17, 2026  
+**Severity:** Low–Medium  
+**CWE:** CWE-284 – Improper Access Control  
+**OWASP:** A01:2021 – Broken Access Control  
+**Bug Bounty Scope:** Out of scope — documented for portfolio purposes only
+
+-----
+
+## Important Note
+
+This finding was discovered during informal testing prior to reviewing REI’s bug bounty scope. REI’s program explicitly excludes wish list functionality. No malicious action was taken, no sensitive data was accessed or retained, and testing was stopped immediately after confirming the issue to avoid affecting another user’s data.
+
+-----
 
 ## Summary
 
-During testing of a wishlist feature, an insecure direct object reference (IDOR) issue was identified by modifying a numeric identifier in the request.
+During testing of the REI wish list feature, an Insecure Direct Object Reference (IDOR) was identified by modifying a numeric identifier in the URL path. By changing the wish list ID from one value to another, it was possible to access another user’s wish list without authorization. Additionally, items from the unauthorized wish list could be added to the tester’s own shopping cart, demonstrating insufficient authorization checks on wish list ownership.
 
-By changing the wishlist ID from one value to another, it was possible to access another user's wishlist without authorization.
+The access control enforcement was found to be **inconsistent** — some list IDs correctly block unauthorized access while others do not — suggesting the check depends on a per-list privacy flag set by the owner rather than a blanket server-side ownership validation.
 
-Additionally, items from the unauthorized wishlist could be imported into the tester's own account.
+-----
 
----
+## Vulnerability Details
 
-## Vulnerability Type
+|Field                |Detail                                                |
+|---------------------|------------------------------------------------------|
+|**Type**             |Insecure Direct Object Reference (IDOR)               |
+|**CWE**              |CWE-284: Improper Access Control                      |
+|**OWASP Category**   |A01:2021 – Broken Access Control                      |
+|**Affected Endpoint**|`https://www.rei.com/lists/{id}`                      |
+|**ID Format**        |Sequential integer (e.g. `/lists/2344`, `/lists/2346`)|
+|**Auth Required**    |No — accessible while logged into a different account |
 
-- Insecure Direct Object Reference (IDOR)
-- Broken Access Control
-
----
+-----
 
 ## Testing Scenario
 
-A wishlist request contained a numeric identifier similar to:
+The wish list endpoint uses a numeric ID in the URL path:
 
-http GET /wishlist?id=2344 
+```
+GET https://www.rei.com/lists/2344
+```
 
-The identifier was manually modified:
+The identifier was manually incremented:
 
-http GET /wishlist?id=2346 
+```
+GET https://www.rei.com/lists/2346
+```
 
-The server returned a different user's wishlist instead of rejecting the request.
+The server returned a different user’s wish list contents instead of rejecting the request.
 
----
+-----
 
-## Observed Behavior
+## Steps to Reproduce
 
-The unauthorized wishlist contained multiple items, including products marked as in stock.
+1. Log into REI as Account A (attacker account).
+1. Navigate to your own wish list — note the numeric ID in the URL (e.g. `/lists/2344`).
+1. Manually change the ID in the URL bar to a different value (e.g. `/lists/2346`).
+1. Observe that some IDs are blocked while others expose another user’s full wish list.
+1. Click **“Add to cart”** on an available item from the exposed list.
+1. Confirm the item is added to the attacker’s cart.
 
-The application also allowed importing wishlist items into the tester's own account, demonstrating insufficient authorization checks on wishlist ownership.
-
----
+-----
 
 ## Expected Behavior
 
 The application should verify that:
-- the authenticated user owns the requested wishlist
-- unauthorized wishlist identifiers cannot be accessed
 
----
+- The authenticated user owns the requested wish list
+- Unauthorized wish list IDs cannot be accessed regardless of the list’s privacy setting
 
 ## Actual Behavior
 
-Changing the numeric identifier allowed access to another user's wishlist data without authorization.
+Changing the numeric ID in the URL allowed access to another user’s wish list without any authorization check, and allowed items from that list to be added to a different user’s cart.
 
----
+-----
+
+## Observed Behavior
+
+### List 2344 — Access Correctly Blocked
+
+Navigating to `/lists/2344` while authenticated as a different user returned:
+
+> *“This list is not publicly available.”*
+
+This is the expected, correct behavior.
+
+### List 2346 — Access Control Not Enforced
+
+Navigating to `/lists/2346` returned the **full wish list contents** of another account (7 items), including:
+
+- Vargo Titanium Hexagon Backpacking Wood Stove — No longer available
+- **Lodge Dutch Oven - 4 qt. (#7142490015) — In stock, $74.95**
+- SOL Mag Striker — No longer available
+- SOL Fire Lite Kit — No longer available
+- 3 additional items
+
+### Cart Manipulation Confirmed
+
+Clicking “Add to cart” on the Lodge Dutch Oven successfully added it to the attacker’s cart — confirmed by the “Added to cart” modal and the cart page showing the item at $74.95.
+
+-----
 
 ## Security Impact
 
-This issue may allow attackers to:
-- access other users' saved items
-- enumerate wishlist identifiers
-- interact with data belonging to other accounts
+This issue may allow an attacker to:
 
-If additional functionality exists (edit/delete/share), the impact could increase further.
+- **Enumerate other users’ wish lists** by iterating sequential, predictable IDs
+- **View saved products** belonging to other REI members
+- **Add items from another user’s list** to their own cart
 
----
+If additional wish list actions exist (edit, delete, share, purchase on behalf), the impact could increase significantly. The use of sequential integer IDs also makes automated enumeration trivial.
 
-## Notes
+-----
 
-Testing was stopped after confirming unauthorized access in order to avoid affecting another user's data or modifying resources outside the permitted scope.
+## Root Cause
+
+The endpoint uses sequential, predictable integer IDs with no server-side check verifying that the requesting user owns the list. Access control appears to rely on a per-list privacy flag rather than ownership validation, producing inconsistent results across list IDs.
+
+-----
+
+## Recommendation
+
+1. **Implement server-side ownership validation** on all `/lists/{id}` requests — verify the authenticated user owns or has been explicitly granted access to the list, regardless of its privacy setting.
+1. **Replace sequential IDs with UUIDs** (e.g. `/lists/a3f9c2d1-4b8e-...`) to eliminate enumeration risk even if access control gaps exist.
+1. **Apply access control uniformly** across all list IDs — the inconsistency between blocked and accessible IDs indicates the check is not globally enforced.
+
+-----
+
+## Evidence
+
+Screenshots are available showing:
+
+|Screenshot|Time |Description                                              |
+|----------|-----|---------------------------------------------------------|
+|IMG_5121  |11:46|List 2344 — access blocked (correct behavior)            |
+|IMG_5122  |11:49|List 2346 — another user’s 7-item wish list fully visible|
+|IMG_5123  |11:56|Item added to cart from unauthorized list                |
+|IMG_5124  |11:58|Cart confirms Lodge Dutch Oven added ($74.95)            |
+
+*Account usernames and identifying information have been blurred in all screenshots.*
+
+-----
+
+## References
+
+- [OWASP: IDOR](https://owasp.org/www-chapter-ghana/assets/slides/IDOR.pdf)
+- [CWE-284: Improper Access Control](https://cwe.mitre.org/data/definitions/284.html)
+- [OWASP A01:2021 – Broken Access Control](https://owasp.org/Top10/A01_2021-Broken_Access_Control/)
+- [PortSwigger: Insecure Direct Object References](https://portswigger.net/web-security/access-control/idor)
+
+-----
+
+*This report is produced for educational and portfolio purposes. Testing was performed using accounts owned by the tester. No data was exfiltrated, no resources were modified, and no other users were harmed.*
 
 ## Evidence
 
