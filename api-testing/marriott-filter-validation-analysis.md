@@ -1,174 +1,220 @@
-# Improper Filter Validation Leading to Unintended Job Listing Exposure
+# Improper Filter Validation Causing Inconsistent API Response Behavior
 
-## Target
-Marriott International
+**Target:** Marriott International
 
----
+-----
 
-# Summary
+## Summary
 
-During testing of a public job-search API endpoint, inconsistent filter validation behavior was identified within the employment type filtering mechanism.
+During testing of a public job-search API endpoint, inconsistent input validation behavior was observed within the `employment_type` filtering mechanism.
 
-The endpoint accepted unexpected or invalid filter values and returned broader job listing results instead of rejecting malformed input or enforcing strict validation.
+The backend accepted unexpected, empty, and unsupported filter values while continuing to return successful responses (HTTP 200 OK).
 
-Testing demonstrated that invalid or empty filter values could alter application behavior and produce responses inconsistent with expected filtering logic.
+Instead of explicitly rejecting malformed input, the endpoint processed unsupported values and returned response patterns that differed from normal filtered requests.
 
----
+Testing showed inconsistent server-side handling of filter input rather than confirmed unauthorized access, sensitive data exposure, or filter bypass.
 
-# Endpoint Tested
+-----
 
-```http
-GET /api/get-jobs
+## Endpoint Tested
+
+```
+POST /api/get-jobs?radius=15&filter[employment_type][0]=FULL_TIME
+POST /api/get-jobs?radius=15&filter[employment_type][0]=INVALID
+POST /api/get-jobs?radius=15&filter[employment_type][1]=INVALID
+POST /api/get-jobs?radius=15&filter[employment_type][0]=ALL
+POST /api/get-jobs?radius=15&filter[employment_type][0]=
+POST /api/get-jobs?radius=15&filter[employment_type][]=
+POST /api/get-jobs?radius=15&filter[employment_type][1]=NULL
 ```
 
-Example observed requests:
+-----
 
-```http
-get-jobs?radius=15&filter[employment_type][0]=FULL_TIME
-```
-
-```http
-get-jobs?radius=15&filter[employment_type][1]=INVALID
-```
-
-```http
-get-jobs?radius=15&filter[employment_type][]=
-```
-
----
-
-# Testing Environment
+## Testing Environment
 
 - Public unauthenticated job-search functionality
-- Testing performed through browser developer tools
-- Multiple request variations compared using response size, response timing, and returned result sets
+- Testing performed through browser developer tools (Firefox DevTools — Network/XHR)
+- Multiple request variations compared using response size, response timing, and response structure
 
----
+-----
 
-# Findings
+## Findings
 
-## 1. Expected Filter Behavior
+### 1. Expected Filter Behavior
 
-Supplying valid filter values returned appropriately filtered job listings.
+Supplying valid filter values returned expected filtered job listing responses.
 
-### Example
+**Example**
 
-```http
+```
 filter[employment_type][0]=FULL_TIME
 ```
 
-Returned:
-- Only FULL_TIME job listings
-- Approximate response size: 397 KB
+**Observed behavior:**
 
----
+- Endpoint returned HTTP 200 OK
+- Response size was approximately 397 KB
+- Normal filtered job results were returned
 
-## 2. Invalid Filter Handling
+-----
 
-Supplying invalid filter values resulted in inconsistent behavior.
+### 2. Invalid Filter Handling
 
-### Example
+Supplying unsupported filter values resulted in inconsistent backend behavior.
 
-```http
+**Example**
+
+```
 filter[employment_type][1]=INVALID
 ```
 
-Observed behavior:
-- Endpoint returned significantly broader results
-- Response size increased substantially (~657 KB)
-- Filtering restrictions appeared bypassed
+**Observed behavior:**
 
-Similar behavior occurred when:
-- Empty filter values were supplied
-- Unexpected array structures were used
+- Endpoint returned HTTP 200 OK
+- Response size dropped significantly (approximately 657 B in observed requests)
+- Response structure differed from valid filter requests
+- Unsupported input was processed instead of being explicitly rejected
+
+Similar behavior was observed when:
+
+- Unsupported enum values were supplied
 - Filter indexes were modified
+- Alternate array positions were used
 
----
+-----
 
-## 3. Empty / Loose Validation Cases
+### 3. Empty / Loose Validation Cases
 
-Additional tests showed that malformed filter structures did not consistently fail validation.
+Additional tests showed that malformed or loosely structured filter values did not consistently fail validation.
 
-### Examples
+**Examples**
 
-```http
+```
 filter[employment_type][0]=
-```
-
-```http
 filter[employment_type][]=
+filter[employment_type][1]=NULL
 ```
 
-Observed behavior included:
-- Unfiltered or partially filtered result sets
-- Larger response sizes than expected
-- Different application behavior despite invalid input structure
+**Observed behavior included:**
 
----
+- Request accepted successfully
+- Endpoint continued returning HTTP 200 OK
+- Response behavior differed from valid filter requests
+- Malformed input was processed instead of explicitly rejected with validation errors
 
-# Technical Analysis
+-----
 
-The application appeared to trust loosely structured filter input without strict server-side validation of:
+## Response Size Pattern
+
+|Filter Value    |Status|Response Size|Behavior                            |
+|----------------|------|-------------|------------------------------------|
+|`FULL_TIME`     |200 OK|~397 KB      |Valid filtered results returned     |
+|`PART_TIME`     |200 OK|~209 KB      |Valid filtered results returned     |
+|*(empty string)*|200 OK|~408 KB      |Default fallback — all jobs returned|
+|`ALL`           |200 OK|~657 B       |Minimal response — no explicit error|
+|`INVALID`       |200 OK|~657 B       |Silent failure — no validation error|
+|`NULL`          |200 OK|~657 B       |Silent failure — no validation error|
+
+-----
+
+## Technical Analysis
+
+The backend appeared to accept loosely structured filter input without strict server-side validation of:
 
 - Accepted filter values
 - Array structure consistency
 - Empty parameter handling
-- Invalid enumeration enforcement
+- Unsupported enumeration values
 
-Instead of rejecting malformed input, the endpoint frequently defaulted to broader result behavior.
+Instead of rejecting malformed input with explicit validation errors, the endpoint frequently processed unsupported values and returned alternate response patterns.
 
-Testing did not reveal direct sensitive data exposure; however, the behavior demonstrated inconsistent backend filtering logic.
+Testing did not confirm:
 
----
+- Unauthorized access
+- Privilege escalation
+- Sensitive data exposure
+- Definitive filter bypass
 
-# Security Impact
+However, the behavior demonstrated inconsistent backend input validation and weak parameter handling.
 
-Although the endpoint involved public job listing data rather than sensitive authenticated information, weak validation behavior may still indicate broader input-handling inconsistencies within backend filtering mechanisms.
+-----
 
-Potential concerns include:
+## Security Impact
 
-- Unintended data exposure through filter bypass behavior
-- Increased attack surface for parameter manipulation testing
-- Backend logic inconsistencies
+Although the endpoint involved public job listing data rather than authenticated or sensitive information, weak validation behavior may still indicate broader input-handling inconsistencies within backend filtering logic.
+
+**Potential concerns include:**
+
+- Inconsistent backend filtering behavior
+- Increased attack surface for parameter manipulation
+- Unexpected fallback states
 - Weak server-side validation practices
 
-In larger authenticated systems, similar validation weaknesses could potentially affect sensitive filtering logic or authorization-related controls.
+In larger authenticated systems, similar validation weaknesses could potentially affect more sensitive filtering or access-control logic.
 
----
+-----
 
-# Severity Assessment
+## Severity Assessment
 
-Suggested Severity: Informational / Low
+**Suggested Severity:** Informational / Low
 
-### Reasoning
+**Reasoning:**
 
 - No sensitive data exposure was confirmed
-- Behavior affected public job listing data
-- No authentication or authorization bypass identified
-- Issue primarily demonstrates weak filter validation and inconsistent backend logic handling
+- No authentication or authorization bypass was observed
+- The issue affects public job listing functionality only
+- The behavior primarily reflects weak input validation and inconsistent backend handling
 
----
+-----
 
-# Research Notes
+## Reproduction Steps
 
-This case was useful for analyzing:
+1. Open the public Marriott job search page at `https://careers.marriott.com/jobs`
+1. Open browser developer tools and navigate to the **Network** tab, filtered to **XHR**
+1. Trigger a job search to capture the `POST /api/get-jobs` request
+1. Right-click the request and select **Edit and Resend**
+1. Modify the `filter[employment_type]` parameter with the following values in separate requests:
+- `FULL_TIME` — baseline valid request
+- `INVALID` — unsupported enum value
+- `NULL` — null string value
+- `ALL` — boundary enum value
+- *(empty string)* — empty value
+- `filter[employment_type][]=` — malformed array key
+1. Compare returned status codes, response sizes, and response structures across all variations
+
+-----
+
+## Test Statistics
+
+|Metric                                  |Value      |
+|----------------------------------------|-----------|
+|Total Requests Sent                     |~29        |
+|Data Transferred                        |~1.01 MB   |
+|Total Test Duration                     |~40 minutes|
+|HTTP Errors Observed                    |0          |
+|Silent Failures (200 + minimal response)|Multiple   |
+
+-----
+
+## Research Notes
+
+This assessment was useful for examining:
 
 - Backend filter validation behavior
 - Parameter manipulation testing
 - Array-based query handling
-- Differences between frontend filtering and backend enforcement
-- Logic flaw discovery methodology
+- Differences between expected filter logic and server-side processing
+- Response comparison methodology
 
-The testing process also highlighted how malformed input structures may trigger unexpected backend behavior even when no direct vulnerability is immediately visible.
+The testing process showed how malformed filter structures may trigger alternate backend behavior even when no direct security impact is immediately visible.
 
----
+-----
 
-# Skills Demonstrated
+## Skills Demonstrated
 
 - API testing
 - Parameter manipulation
-- Logic flaw analysis
+- Input validation assessment
 - Backend behavior observation
 - Response comparison methodology
-- Input validation testing
 - Web application security research
