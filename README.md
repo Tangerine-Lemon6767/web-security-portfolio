@@ -30,7 +30,7 @@ Junior web security researcher with hands-on experience in API testing, authenti
 
 ### Authentication & Session Analysis
 
-**[Marriott — Session Persistence Analysis](client-side-session-analysis/marriott-session-persistence.md)**
+**[Marriott — Session Persistence Analysis](client-side-session-analysis/ marriott-session-persistence.md)**
 
 - Analyzed session token handling and client-side storage behavior
 - Observed authentication flow and explored potential weaknesses in session persistence
