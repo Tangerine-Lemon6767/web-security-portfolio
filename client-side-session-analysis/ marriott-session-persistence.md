@@ -132,3 +132,16 @@ or
 - Client-side vs server-side validation analysis
 - Logic flaw investigation
 - Web application security testing methodology
+
+## Evidence
+
+<img width="1366" height="768" alt="IMG_5349" src="https://github.com/user-attachments/assets/4591cba4-3234-4968-8141-01296a076550" />
+<img width="1366" height="768" alt="IMG_5344" src="https://github.com/user-attachments/assets/fb2482f4-0c52-4f26-afa3-1cde2545d823" />
+<img width="1366" height="768" alt="IMG_5346" src="https://github.com/user-attachments/assets/a1810dff-0200-4128-bab1-ba29c45b8c0b" />
+<img width="1366" height="768" alt="IMG_5339" src="https://github.com/user-attachments/assets/a121b091-b02b-432c-a414-69e6c83b72e2" />
+<img width="1366" height="768" alt="IMG_5332" src="https://github.com/user-attachments/assets/1e187471-14cf-4623-aee6-342eaf56e4a0" />
+<img width="1366" height="768" alt="IMG_5335" src="https://github.com/user-attachments/assets/b604d151-1d7c-44b5-82c2-a88fdb75e7e0" />
+<img width="1366" height="768" alt="lara local storage booking" src="https://github.com/user-attachments/assets/b145f1f6-83c9-4080-8a6d-aec1545c2432" />
+<img width="1366" height="768" alt="lara booking cookie" src="https://github.com/user-attachments/assets/fc8b9b00-d254-4add-9fb9-d5bc8a28d550" />
+
+
