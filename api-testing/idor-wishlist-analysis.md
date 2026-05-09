@@ -131,21 +131,6 @@ The endpoint uses sequential, predictable integer IDs with no server-side check 
 
 -----
 
-## Evidence
-
-Screenshots are available showing:
-
-|Screenshot|Time |Description                                              |
-|----------|-----|---------------------------------------------------------|
-|IMG_5121  |11:46|List 2344 — access blocked (correct behavior)            |
-|IMG_5122  |11:49|List 2346 — another user’s 7-item wish list fully visible|
-|IMG_5123  |11:56|Item added to cart from unauthorized list                |
-|IMG_5124  |11:58|Cart confirms Lodge Dutch Oven added ($74.95)            |
-
-*Account usernames and identifying information have been blurred in all screenshots.*
-
------
-
 ## References
 
 - [OWASP: IDOR](https://owasp.org/www-chapter-ghana/assets/slides/IDOR.pdf)
@@ -166,5 +151,14 @@ Screenshots are available showing:
 <img width="1280" height="615" alt="idor-proof5" src="https://github.com/user-attachments/assets/ff7e3d1e-2899-40cd-b6b7-61d0c39db697" />
 
 
+Screenshots are available showing:
 
+|Screenshot|Time |Description                                              |
+|----------|-----|---------------------------------------------------------|
+|IMG_5121  |11:46|List 2344 — access blocked (correct behavior)            |
+|IMG_5122  |11:49|List 2346 — another user’s 7-item wish list fully visible|
+|IMG_5123  |11:56|Item added to cart from unauthorized list                |
+|IMG_5124  |11:58|Cart confirms Lodge Dutch Oven added ($74.95)            |
+
+*Account usernames and identifying information have been blurred in all screenshots.*
 
