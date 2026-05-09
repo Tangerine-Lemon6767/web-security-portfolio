@@ -218,3 +218,12 @@ The testing process showed how malformed filter structures may trigger alternate
 - Backend behavior observation
 - Response comparison methodology
 - Web application security research
+
+## Evidence
+
+<img width="1366" height="768" alt="_" src="https://github.com/user-attachments/assets/32234e5d-2821-49ba-a947-6cdc717051b3" />
+
+<img width="1366" height="768" alt="0invalid vs 1 invalid 2" src="https://github.com/user-attachments/assets/cdac5908-5c5e-4ba8-ab35-56be630fbb97" />
+
+<img width="1366" height="768" alt="IMG_5351" src="https://github.com/user-attachments/assets/6ae8cf78-19d7-42dc-a2a1-f2b3921137da" />
+
