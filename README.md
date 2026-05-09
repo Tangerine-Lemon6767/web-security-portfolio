@@ -39,13 +39,14 @@ Junior web security researcher with hands-on experience in API testing, authenti
 
 ### Labs
 
-**[SQL Injection Practice System](projects/security%20labs/readme.md)**
+**[SQL Injection Practice System](projects/security-labs/readme.md)**
 
 - Built a custom vulnerable e-commerce web application to practice SQL injection techniques
-- Implemented attack scenarios in [`attack.py`](projects/security%20labs/attack.py) against a vulnerable [`app.py`](projects/security%20labs/app.py) Flask application
-- Used SQLite ([`AAA.db`](projects/security%20labs/AAA.db)) for realistic query behavior testing
-- Includes HTML templates ([`Templates/ABC.html`](projects/security%20labs/Templates/ABC.html)) for realistic frontend simulation
-- Full project entry point: [`project.py`](projects/security%20labs/project.py)
+- [`app.py`](projects/security-labs/app.py) — vulnerable Flask application
+- [`attack.py`](projects/security-labs/attack.py) — attack scripts demonstrating SQL injection techniques
+- [`AAA.db`](projects/security-labs/AAA.db) — SQLite database for realistic query behavior testing
+- [`templates/ABC.html`](projects/security-labs/templates/ABC.html) — frontend simulation
+- [`project.py`](projects/security-labs/project.py) — full project entry point
 
 -----
 
@@ -55,6 +56,7 @@ Junior web security researcher with hands-on experience in API testing, authenti
 
 - Built a Bash-based reconnaissance tool for endpoint discovery
 - Automates basic recon workflow during web application testing
+- [View documentation](tools/recon-tools/READMErecon.md)
 
 -----
 
